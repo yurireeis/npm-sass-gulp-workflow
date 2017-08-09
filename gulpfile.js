@@ -2,6 +2,7 @@ const gulp = require('gulp');
 const sass = require('gulp-sass');
 const browserSync = require('browser-sync');
 const autoprefixer = require('gulp-autoprefixer');
+const clean = require('gulp-clean');
 const reload = browserSync.reload;
 
 // sourcepaths and apppath is config object to be used in overall gulpfile
@@ -9,7 +10,8 @@ const reload = browserSync.reload;
 // point all the path files in the source (src) folder
 const SOURCEPATHS = {
   sassSource: 'src/scss/*.scss',
-  htmlSource: 'src/*.html'
+  htmlSource: 'src/*.html',
+  jsSource: 'src/js/**' // two asteriscs means any file that you find right there
 }
 
 // point all the path files in the aplication (app) folder
@@ -34,9 +36,14 @@ gulp.task('sass', function () {
 });
 
 // copying html files to another folder (called by watch task)
-gulp.task('copy', function () {
+gulp.task('copy', ['clean-html'], function () {
   gulp.src(SOURCEPATHS.htmlSource)
     .pipe(gulp.dest(APPPATH.root))
+});
+
+gulp.task('scripts', ['clean-scripts'], function () {
+  gulp.src(SOURCEPATHS.jsSource)
+    .pipe(gulp.dest(APPPATH.js));
 });
 
 // browserSync will create a server for us
@@ -50,10 +57,33 @@ gulp.task('serve', ['sass'], function () {
   // baseDir set to browserSync initialize in this folder
 });
 
-gulp.task('watch', ['serve', 'sass', 'copy'], function () {
+gulp.task('watch', [
+  'serve',
+  'sass',
+  'copy',
+  'clean-html',
+  'scripts',
+  'clean-scripts'
+], function () {
   // watch method belogs to gulp
   gulp.watch([SOURCEPATHS.sassSource], ['sass']);
   gulp.watch([SOURCEPATHS.htmlSource], ['copy']);
+  gulp.watch([SOURCEPATHS.jsSource], ['scripts']);
+});
+
+// remove files
+gulp.task('clean-html', function () {
+  return gulp.src(APPPATH.root + '/*.html', {
+    read: false, // set to true if you want to read the file content
+    force: true // forced removing
+  }).pipe(clean());
+});
+
+gulp.task('clean-scripts', function () {
+  return gulp.src(APPPATH.js + '/*.js', {
+    read: false, // set to true if you want to read the file content
+    force: true // forced removing
+  }).pipe(clean());
 });
 
 // if you run only gulo command will run default task
