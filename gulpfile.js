@@ -1,5 +1,21 @@
 const gulp = require('gulp');
 const sass = require('gulp-sass');
+const browserSync = require('browser-sync');
+const reload = browserSync.reload;
+
+// sourcepaths and apppath is config object to be used in overall gulpfile
+
+// point all the path files in the source (src) folder
+const SOURCEPATHS = {
+  sassSource: 'src/scss/*.scss'
+}
+
+// point all the path files in the aplication (app) folder
+const APPPATH = {
+  root: 'app/',
+  css: 'app/css',
+  js: 'app/js'
+}
 
 // invoque a task
 // scss is the common way that you call your sass files folder
@@ -7,13 +23,30 @@ const sass = require('gulp-sass');
 // outputStyle is a method of sass
 // gulp.dest is the destination of where will be compiled
 gulp.task('sass', function () {
-  return gulp.src('src/scss/app.scss')
+  return gulp.src(SOURCEPATHS.sassSource)
     .pipe(sass({
       outputStyle: 'expanded'
     }).on('error', sass.logError))
-    .pipe(gulp.dest('app/css'));
+    .pipe(gulp.dest(APPPATH.css));
+});
+
+// browserSync will create a server for us
+gulp.task('serve', ['sass'], function () {
+  // if tou
+  browserSync.init([
+    APPPATH.root + '/*.html',
+    APPPATH.css + '/*.css',
+    APPPATH.js + '/*.js'
+  ], { server: { baseDir: APPPATH.root }});
+  // baseDir set to browserSync initialize in this folder
+});
+
+gulp.task('watch', ['serve', 'sass'], function () {
+  // watch method belogs to gulp
+  gulp.watch([SOURCEPATHS.sassSource], ['sass']);
 });
 
 // if you run only gulo command will run default task
-// the curly brackets tasks will be executed
-gulp.task('default', ['sass']);
+// the square brackets tasks will be executed
+// the sass/serve task is removed because watch task already call sass
+gulp.task('default', ['watch']);
