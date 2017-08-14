@@ -21,8 +21,27 @@ const SOURCEPATHS = {
 const APPPATH = {
   root: 'app/',
   css: 'app/css',
-  js: 'app/js'
+  js: 'app/js',
+  fonts: 'app/fonts'
 }
+
+const EXTENSIONS = {
+  fonts: 'eot,svg,ttf,woff,woff2'
+}
+
+const FONTSPATH = {
+  bootstrap: './node_modules/bootstrap/dist/fonts/'
+}
+
+const CSSPATH = {
+  bootstrap: './node_modules/bootstrap/dist/css/'
+}
+
+// task to move allowed fonts
+gulp.task('move-fonts', function () {
+  gulp.src(FONTSPATH.bootstrap + '*.' + '{' + EXTENSIONS.fonts + '}')  // the second path defines allowed font extensions
+    .pipe(gulp.dest(APPPATH.fonts));
+});
 
 // invoque a task
 // scss is the common way that you call your sass files folder
@@ -31,7 +50,7 @@ const APPPATH = {
 // gulp.dest is the destination of where will be compiled
 gulp.task('sass', function () {
 
-  var bootstrapCSS = gulp.src('./node_modules/bootstrap/dist/css/bootstrap.css');
+  var bootstrapCSS = gulp.src(CSSPATH.bootstrap + 'bootstrap.css');
   var sassFiles;
 
   sassFiles = gulp.src(SOURCEPATHS.sassSource)
@@ -74,7 +93,8 @@ gulp.task('watch', [
   'copy',
   'clean-html',
   'scripts',
-  'clean-scripts'
+  'clean-scripts',
+  'move-fonts'
 ], function () {
   // watch method belogs to gulp
   gulp.watch([SOURCEPATHS.sassSource], ['sass']);
