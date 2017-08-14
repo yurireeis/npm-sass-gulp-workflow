@@ -4,6 +4,8 @@ const browserSync = require('browser-sync');
 const autoprefixer = require('gulp-autoprefixer');
 const clean = require('gulp-clean');
 const concat = require('gulp-concat');
+const browserify = require('gulp-browserify');
+const merge = require('merge-stream');
 const reload = browserSync.reload;
 
 // sourcepaths and apppath is config object to be used in overall gulpfile
@@ -28,12 +30,18 @@ const APPPATH = {
 // outputStyle is a method of sass
 // gulp.dest is the destination of where will be compiled
 gulp.task('sass', function () {
-  return gulp.src(SOURCEPATHS.sassSource)
+
+  var bootstrapCSS = gulp.src('./node_modules/bootstrap/dist/css/bootstrap.css');
+  var sassFiles;
+
+  sassFiles = gulp.src(SOURCEPATHS.sassSource)
     .pipe(autoprefixer())
-    .pipe(sass({
-      outputStyle: 'expanded'
-    }).on('error', sass.logError))
-    .pipe(gulp.dest(APPPATH.css));
+    .pipe(sass({outputStyle: 'expanded'}).on('error', sass.logError));
+
+    return merge(sassFiles, bootstrapCSS)  // in this case we added sass and after bootstrap css in app.css file
+      .pipe(concat('app.css'))
+      .pipe(gulp.dest(APPPATH.css));
+
 });
 
 // copying html files to another folder (called by watch task)
@@ -45,6 +53,7 @@ gulp.task('copy', ['clean-html'], function () {
 gulp.task('scripts', ['clean-scripts'], function () {
   gulp.src(SOURCEPATHS.jsSource)
     .pipe(concat('main.js'))  // the output file of concat
+    .pipe(browserify())  // set all libraries on jsSource in just one file (main.js in this case)
     .pipe(gulp.dest(APPPATH.js));
 });
 
