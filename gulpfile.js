@@ -3,6 +3,7 @@ const sass = require('gulp-sass');
 const browserSync = require('browser-sync');
 const autoprefixer = require('gulp-autoprefixer');
 const clean = require('gulp-clean');
+const concat = require('gulp-concat');
 const reload = browserSync.reload;
 
 // sourcepaths and apppath is config object to be used in overall gulpfile
@@ -43,6 +44,7 @@ gulp.task('copy', ['clean-html'], function () {
 
 gulp.task('scripts', ['clean-scripts'], function () {
   gulp.src(SOURCEPATHS.jsSource)
+    .pipe(concat('main.js'))  // the output file of concat
     .pipe(gulp.dest(APPPATH.js));
 });
 
