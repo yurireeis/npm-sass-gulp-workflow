@@ -6,6 +6,9 @@ const clean = require('gulp-clean');
 const concat = require('gulp-concat');
 const browserify = require('gulp-browserify');
 const merge = require('merge-stream');
+const newer = require('gulp-newer');
+const imagemin = require('gulp-imagemin');
+
 const reload = browserSync.reload;
 
 // sourcepaths and apppath is config object to be used in overall gulpfile
@@ -14,7 +17,8 @@ const reload = browserSync.reload;
 const SOURCEPATHS = {
   sassSource: 'src/scss/*.scss',
   htmlSource: 'src/*.html',
-  jsSource: 'src/js/**' // two asteriscs means any file that you find right there
+  jsSource: 'src/js/**', // two asteriscs means any file that you find right there
+  imgSource: 'src/img/'
 }
 
 // point all the path files in the aplication (app) folder
@@ -22,11 +26,13 @@ const APPPATH = {
   root: 'app/',
   css: 'app/css',
   js: 'app/js',
-  fonts: 'app/fonts'
+  fonts: 'app/fonts',
+  images: 'app/img'
 }
 
 const EXTENSIONS = {
-  fonts: 'eot,svg,ttf,woff,woff2'
+  fonts: 'eot,svg,ttf,woff,woff2',
+  images: 'png,jpg,jpeg'
 }
 
 const FONTSPATH = {
@@ -36,6 +42,13 @@ const FONTSPATH = {
 const CSSPATH = {
   bootstrap: './node_modules/bootstrap/dist/css/'
 }
+
+gulp.task('images', function () {
+  return gulp.src(SOURCEPATHS.imgSource + '*.' + '{' + EXTENSIONS.images + '}')  // will monitor image source path
+    .pipe(newer(APPPATH.images))  // validate if new files exists in APPPATH
+    .pipe(imagemin())  // make images minification
+    .pipe(gulp.dest(APPPATH.images));  // set the destiny of sourcepath images
+});
 
 // task to move allowed fonts
 gulp.task('move-fonts', function () {
@@ -94,7 +107,8 @@ gulp.task('watch', [
   'clean-html',
   'scripts',
   'clean-scripts',
-  'move-fonts'
+  'move-fonts',
+  'images'
 ], function () {
   // watch method belogs to gulp
   gulp.watch([SOURCEPATHS.sassSource], ['sass']);
