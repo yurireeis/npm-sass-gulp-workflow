@@ -20,6 +20,7 @@ const reload = browserSync.reload;
 
 // point all the path files in the source (src) folder
 const SOURCEPATHS = {
+  root: 'src/',
   sassSource: 'src/scss/*.scss',
   htmlSource: 'src/*.html',
   jsSource: 'src/js/**', // two asteriscs means any file that you find right there
@@ -85,6 +86,12 @@ gulp.task('html-compress', function () {
 
 /* END OF PRODUCTION TASKS */
 
+gulp.task('json', function () {
+  return gulp.src(SOURCEPATHS.root + '*.json')
+    .pipe(newer(APPPATH.root))
+    .pipe(gulp.dest(APPPATH.root));
+});
+
 gulp.task('html', function () {
   return gulp.src(SOURCEPATHS.htmlSource)
     .pipe(injectPartials())
@@ -93,7 +100,7 @@ gulp.task('html', function () {
 
 gulp.task('images', function () {
   return gulp.src(SOURCEPATHS.imgSource + '*.' + '{' + EXTENSIONS.images + '}')  // will monitor image source path
-    .pipe(newer(APPPATH.images))  // validate if new files exists in APPPATH
+    .pipe(newer(APPPATH.images))  // validate if newest files exists in APPPATH
     .pipe(imagemin())  // make images minification
     .pipe(gulp.dest(APPPATH.images));  // set the destiny of sourcepath images
 });
@@ -150,6 +157,7 @@ gulp.task('serve', ['sass'], function () {
 });
 
 gulp.task('watch', [
+  'json',
   'serve',
   'sass',
   'clean-html',
