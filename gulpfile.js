@@ -9,6 +9,9 @@ const merge = require('merge-stream');
 const newer = require('gulp-newer');
 const imagemin = require('gulp-imagemin');
 const injectPartials = require('gulp-inject-partials');
+const minify = require('gulp-minify');
+const rename = require('gulp-rename');
+const cssmin = require('gulp-cssmin');
 
 const reload = browserSync.reload;
 
@@ -44,6 +47,35 @@ const FONTSPATH = {
 const CSSPATH = {
   bootstrap: './node_modules/bootstrap/dist/css/'
 }
+
+/* PRODUCTION TASKS */
+gulp.task('compress', function () {
+  gulp.src(SOURCEPATHS.jsSource)
+    .pipe(concat('main.js'))  // the output file of concat, set all libraries on jsSource in just one file (main.js in this case)
+    .pipe(browserify())
+    .pipe(minify())  // in this case, we will minify the js files
+    .pipe(rename({suffix: '.min'}))
+    .pipe(gulp.dest(APPPATH.js));
+});
+
+gulp.task('compresscss', function () {
+
+  var bootstrapCSS = gulp.src(CSSPATH.bootstrap + 'bootstrap.css');
+  var sassFiles;
+
+  sassFiles = gulp.src(SOURCEPATHS.sassSource)
+    .pipe(autoprefixer())
+    .pipe(sass({outputStyle: 'expanded'}).on('error', sass.logError));
+
+    return merge(sassFiles, bootstrapCSS)  // in this case we added sass and after bootstrap css in app.css file
+      .pipe(concat('app.css'))
+      .pipe(cssmin())
+      .pipe(rename({suffix: '.min'}))
+      .pipe(gulp.dest(APPPATH.css));
+
+});
+
+/* END OF PRODUCTION TASKS */
 
 gulp.task('html', function () {
   return gulp.src(SOURCEPATHS.htmlSource)
