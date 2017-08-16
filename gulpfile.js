@@ -12,6 +12,7 @@ const injectPartials = require('gulp-inject-partials');
 const minify = require('gulp-minify');
 const rename = require('gulp-rename');
 const cssmin = require('gulp-cssmin');
+const htmlmin = require('gulp-htmlmin');
 
 const reload = browserSync.reload;
 
@@ -49,7 +50,7 @@ const CSSPATH = {
 }
 
 /* PRODUCTION TASKS */
-gulp.task('compress', function () {
+gulp.task('js-compress', function () {
   gulp.src(SOURCEPATHS.jsSource)
     .pipe(concat('main.js'))  // the output file of concat, set all libraries on jsSource in just one file (main.js in this case)
     .pipe(browserify())
@@ -58,7 +59,7 @@ gulp.task('compress', function () {
     .pipe(gulp.dest(APPPATH.js));
 });
 
-gulp.task('compresscss', function () {
+gulp.task('css-compress', function () {
 
   var bootstrapCSS = gulp.src(CSSPATH.bootstrap + 'bootstrap.css');
   var sassFiles;
@@ -73,6 +74,13 @@ gulp.task('compresscss', function () {
       .pipe(rename({suffix: '.min'}))
       .pipe(gulp.dest(APPPATH.css));
 
+});
+
+gulp.task('html-compress', function () {
+  return gulp.src(SOURCEPATHS.htmlSource)
+    .pipe(injectPartials())
+    .pipe(htmlmin({collapseWhitespace: true}))  // collapseWhitespace it's an option
+    .pipe(gulp.dest(APPPATH.root));
 });
 
 /* END OF PRODUCTION TASKS */
@@ -178,3 +186,4 @@ gulp.task('clean-scripts', function () {
 // the square brackets tasks will be executed
 // the sass/serve task is removed because watch task already call sass
 gulp.task('default', ['watch']);
+gulp.task('production', ['html-compress', 'css-compress', 'js-compress']);
