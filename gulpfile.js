@@ -8,6 +8,7 @@ const browserify = require('gulp-browserify');
 const merge = require('merge-stream');
 const newer = require('gulp-newer');
 const imagemin = require('gulp-imagemin');
+const injectPartials = require('gulp-inject-partials');
 
 const reload = browserSync.reload;
 
@@ -18,7 +19,8 @@ const SOURCEPATHS = {
   sassSource: 'src/scss/*.scss',
   htmlSource: 'src/*.html',
   jsSource: 'src/js/**', // two asteriscs means any file that you find right there
-  imgSource: 'src/img/'
+  imgSource: 'src/img/',
+  htmlPartialSource: 'src/partial/*.html'  // html partials is html files to be added to all html files
 }
 
 // point all the path files in the aplication (app) folder
@@ -42,6 +44,12 @@ const FONTSPATH = {
 const CSSPATH = {
   bootstrap: './node_modules/bootstrap/dist/css/'
 }
+
+gulp.task('html', function () {
+  return gulp.src(SOURCEPATHS.htmlSource)
+    .pipe(injectPartials())
+    .pipe(gulp.dest(APPPATH.root));
+});
 
 gulp.task('images', function () {
   return gulp.src(SOURCEPATHS.imgSource + '*.' + '{' + EXTENSIONS.images + '}')  // will monitor image source path
@@ -77,10 +85,11 @@ gulp.task('sass', function () {
 });
 
 // copying html files to another folder (called by watch task)
-gulp.task('copy', ['clean-html'], function () {
-  gulp.src(SOURCEPATHS.htmlSource)
-    .pipe(gulp.dest(APPPATH.root))
-});
+// commented in function of html task
+// gulp.task('copy', ['clean-html'], function () {
+//   gulp.src(SOURCEPATHS.htmlSource)
+//     .pipe(gulp.dest(APPPATH.root))
+// });
 
 gulp.task('scripts', ['clean-scripts'], function () {
   gulp.src(SOURCEPATHS.jsSource)
@@ -103,17 +112,19 @@ gulp.task('serve', ['sass'], function () {
 gulp.task('watch', [
   'serve',
   'sass',
-  'copy',
   'clean-html',
+  // 'copy',
   'scripts',
   'clean-scripts',
   'move-fonts',
-  'images'
+  'images',
+  'html'
 ], function () {
   // watch method belogs to gulp
   gulp.watch([SOURCEPATHS.sassSource], ['sass']);
-  gulp.watch([SOURCEPATHS.htmlSource], ['copy']);
+  // gulp.watch([SOURCEPATHS.htmlSource], ['copy']); injectPartials and copy doing the same
   gulp.watch([SOURCEPATHS.jsSource], ['scripts']);
+  gulp.watch([SOURCEPATHS.htmlSource, SOURCEPATHS.htmlPartialSource], ['html']);
 });
 
 // remove files
